@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime
+from datetime import datetime
 from app.core.database import Base
 
 class Transaction(Base):
@@ -7,6 +8,7 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     category_id = Column(Integer, ForeignKey("categories.id"))
-    type = Column(String)
+    type = Column(String)  # income / expense
     amount = Column(Float)
     note = Column(String)
+    date = Column(DateTime, default=datetime.utcnow)

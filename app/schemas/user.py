@@ -5,10 +5,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
-class UserOut(BaseModel):
-    id: int
-    name: str
+class UserLogin(BaseModel):
     email: EmailStr
-
-    class Config:
-        from_attributes = True
+    password: str

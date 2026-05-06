@@ -1,25 +1,44 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserOut
-from passlib.context import CryptContext
+from app.schemas.user import UserCreate
+from app.core.security import hash_password, verify_password
 
 router = APIRouter()
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router.post("/register", response_model=UserOut)
+@router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    hashed = pwd.hash(user.password)
 
     new_user = User(
         name=user.name,
         email=user.email,
-        password=hashed
+        password=hash_password(user.password)
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    return {"message": "User created", "id": new_user.id}
+
+
+
+    # ---------------- LOGIN ----------------
+@router.post("/login")
+def login(user: UserCreate, db: Session = Depends(get_db)):
+
+    db_user = db.query(User).filter(User.email == user.email).first()
+
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    if not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=400, detail="Wrong password")
+
+    return {
+        "message": "Login successful",
+        "user_id": db_user.id,
+        "name": db_user.name
+    }
