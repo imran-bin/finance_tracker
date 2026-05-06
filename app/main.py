@@ -4,6 +4,7 @@ from db import Base, engine, get_db
 from models import Transaction
 from fastapi.middleware.cors import CORSMiddleware
 
+# create tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -19,8 +20,9 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-    return {"msg": "Finance API running"}
+    return {"msg": "Finance Tracker API running"}
 
+# ➕ Add transaction
 @app.post("/add")
 def add(title: str, amount: float, type: str, db: Session = Depends(get_db)):
     tx = Transaction(title=title, amount=amount, type=type)
@@ -28,6 +30,7 @@ def add(title: str, amount: float, type: str, db: Session = Depends(get_db)):
     db.commit()
     return {"msg": "added"}
 
+# 📊 Get all transactions
 @app.get("/all")
 def all_tx(db: Session = Depends(get_db)):
     return db.query(Transaction).all()
