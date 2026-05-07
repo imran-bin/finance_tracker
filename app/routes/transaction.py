@@ -42,6 +42,22 @@ def add_transaction(tx: TransactionCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+@router.put("/{transaction_id}")
+def update_transaction(transaction_id: int, tx: TransactionCreate, db: Session = Depends(get_db)):
+    t = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    t.amount = tx.amount
+    t.note = tx.note
+    t.type = tx.type
+    t.category_id = tx.category_id
+    t.date = tx.date
+
+    db.commit()
+    db.refresh(t)
+    return t
+
 @router.get("/{user_id}")
 def get_transactions(user_id: int, db: Session = Depends(get_db)):
     return db.query(Transaction).filter(Transaction.user_id == user_id).order_by(Transaction.date.desc()).all()
