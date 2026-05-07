@@ -3,10 +3,25 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.user import User
+from app.models.category import Category
 from app.schemas.user import UserCreate, UserLogin
 from app.core.security import hash_password, verify_password
 
 router = APIRouter()
+
+def seed_categories(user_id: int, db: Session):
+    defaults = [
+        {"name": "salary", "type": "income"},
+        {"name": "freelance", "type": "income"},
+        {"name": "food", "type": "expense"},
+        {"name": "transport", "type": "expense"},
+        {"name": "shopping", "type": "expense"},
+        {"name": "health", "type": "expense"},
+    ]
+    for item in defaults:
+        cat = Category(name=item["name"], type=item["type"], user_id=user_id)
+        db.add(cat)
+    db.commit()
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -25,8 +40,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    # Seed default categories for the new user
+    seed_categories(new_user.id, db)
+
     return {
-        "message": "User created successfully",
+        "message": "User created successfully with default categories",
         "user": {
             "id": new_user.id,
             "name": new_user.name,
