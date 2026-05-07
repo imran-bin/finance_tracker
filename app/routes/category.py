@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from typing import List
 
 from app.core.database import get_db
 from app.models.category import Category
@@ -15,7 +16,11 @@ def create_category(cat: CategoryCreate, db: Session = Depends(get_db)):
     db.refresh(c)
     return c
 
-
-@router.get("/")
-def get_categories(db: Session = Depends(get_db)):
-    return db.query(Category).all()
+@router.get("/{user_id}")
+def get_categories(user_id: int, db: Session = Depends(get_db)):
+    # Also return some default categories if user has none
+    categories = db.query(Category).filter(Category.user_id == user_id).all()
+    if not categories:
+        # Default categories logic could go here or on frontend
+        pass
+    return categories
