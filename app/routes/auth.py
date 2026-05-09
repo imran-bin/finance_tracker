@@ -11,6 +11,7 @@ router = APIRouter()
 def seed_categories(user_id: int, db: Session):
     defaults = [
         {"name": "salary", "type": "income"},
+        {"name": "remittance", "type": "income"},
         {"name": "freelance", "type": "income"},
         {"name": "food", "type": "expense"},
         {"name": "transport", "type": "expense"},
