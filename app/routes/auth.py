@@ -85,7 +85,15 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
 
 @router.get("/me")
 def get_current_user(request: Request, db: Session = Depends(get_db)):
+    # 1. Try to get token from Cookie
     token = request.cookies.get("access_token")
+    
+    # 2. If no cookie, try to get token from Authorization header
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+    
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
